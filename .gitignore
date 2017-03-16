@@ -1,9 +1,3 @@
-
-### CVS template
-/CVS/*
-**/CVS/*
-.cvsignore
-*/.cvsignore
-.idea
+# Created by .ignore support plugin (hsz.mobi)
 .gitignore
-
+.idea/
