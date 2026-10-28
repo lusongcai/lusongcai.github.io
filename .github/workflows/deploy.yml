@@ -1,0 +1,55 @@
+name: Publish reading notes
+
+on:
+  push:
+    branches: [master]
+    paths: [.github/workflows/deploy.yml]
+  workflow_dispatch:
+  schedule:
+    - cron: '23 22 * * *'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out reading notes and website source
+        uses: actions/checkout@v4
+        with:
+          repository: lusongcai/my-docs
+          ref: develop
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-fund --no-audit
+      - name: Build and check site
+        run: |
+          npm run build
+          npm run check:site
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
